@@ -1,15 +1,9 @@
-FROM node:12.2
+FROM node:16-alpine as builder
+WORKDIR '/app'
+COPY package.json .
+RUN npm install
+COPY . .
+RUN npm run build
 
-ENV HOME=/home/app
-
-RUN apt-get update && apt-get install htop
-
-COPY package.json package-lock.json $HOME/node_docker/
-
-WORKDIR $HOME/node_docker
-
-RUN npm install --silent --progress=false
-
-COPY . $HOME/node_docker
-
-CMD ["npm", "start"]
+FROM nginx
+COPY --from=builder /app/build /usr/share/nginx/html
